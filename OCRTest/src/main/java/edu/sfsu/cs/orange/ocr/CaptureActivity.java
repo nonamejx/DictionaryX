@@ -30,6 +30,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -62,6 +63,10 @@ import android.widget.Toast;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.BreakIterator;
@@ -69,6 +74,8 @@ import java.util.Locale;
 
 import edu.sfsu.cs.orange.ocr.camera.CameraManager;
 import edu.sfsu.cs.orange.ocr.camera.ShutterButton;
+import edu.sfsu.cs.orange.ocr.database.DatabaseHelper;
+import edu.sfsu.cs.orange.ocr.entity.Word;
 import edu.sfsu.cs.orange.ocr.language.LanguageCodeHelper;
 
 /**
@@ -193,6 +200,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     private TextView statusViewTop;
     private TextView ocrResultView;
     private TextView translationView;
+    private TextView tvMeaning;
     private View cameraButtonView;
     private View resultView;
     private View progressView;
@@ -236,6 +244,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         return cameraManager;
     }
 
+    DatabaseHelper databaseHelper;
+
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -273,6 +283,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         ocrResultView = (TextView) findViewById(R.id.ocr_result_text_view);
         registerForContextMenu(ocrResultView);
         translationView = (TextView) findViewById(R.id.translation_text_view);
+        tvMeaning = (TextView) findViewById(R.id.tv_meaning);
         registerForContextMenu(translationView);
 
         //progressView = (View) findViewById(R.id.indeterminate_progress_indicator_view);
@@ -362,6 +373,8 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         });
 
         isEngineReady = false;
+
+        databaseHelper = new DatabaseHelper(this);
     }
 
     @Override
@@ -1288,13 +1301,37 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             @Override
             public void onClick(View view) {
                 translationView.setText(word);
-                Toast.makeText(view.getContext(), mWord, Toast.LENGTH_SHORT)
-                        .show();
+                new SearchAsyncTask().execute(word);
             }
 
             public void updateDrawState(TextPaint ds) {
                 super.updateDrawState(ds);
             }
         };
+    }
+
+    private class SearchAsyncTask extends AsyncTask<String, Word, Word> {
+
+        @Override
+        protected Word doInBackground(String... strings) {
+            return databaseHelper.search(strings[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Word word) {
+            if (word == null) {
+            } else {
+                tvMeaning.setText(getMeaning(word.getMean()));
+            }
+        }
+    }
+
+    private String getMeaning(String text) {
+        Document doc = Jsoup.parse(text);
+        Elements fonts = doc.getElementsByTag("font");
+        if (fonts != null && fonts.size() > 0) {
+            return fonts.get(0).text();
+        }
+        return null;
     }
 }

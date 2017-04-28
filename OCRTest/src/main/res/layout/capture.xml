@@ -125,7 +125,17 @@
                         android:autoLink="web"
                         android:clickable="true"
                         android:paddingLeft="12dip"
-                        android:text="asdkjasdjahsdlkahsdlkjh"
+                        android:textColor="@color/translation_text"
+                        android:textColorLink="@color/translation_text"
+                        android:textSize="22sp" />
+
+                    <TextView
+                        android:id="@+id/tv_meaning"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:autoLink="web"
+                        android:clickable="true"
+                        android:paddingLeft="12dip"
                         android:textColor="@color/translation_text"
                         android:textColorLink="@color/translation_text"
                         android:textSize="22sp" />

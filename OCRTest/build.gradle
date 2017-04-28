@@ -24,4 +24,8 @@ dependencies {
     compile files('libs/json_simple-1.1.jar')
     compile files('libs/jtar-1.0.4.jar')
     compile files('libs/microsoft-translator-java-api-0.6-mod.jar')
+    compile 'com.google.code.gson:gson:2.2.+'
+    compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:+'
+    compile 'org.sufficientlysecure:html-textview:3.3'
+    compile 'org.jsoup:jsoup:1.10.2'
 }
