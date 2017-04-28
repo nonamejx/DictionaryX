@@ -30,14 +30,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
 import android.text.style.CharacterStyle;
+import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.util.TypedValue;
@@ -61,11 +64,12 @@ import com.googlecode.tesseract.android.TessBaseAPI;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.BreakIterator;
+import java.util.Locale;
 
 import edu.sfsu.cs.orange.ocr.camera.CameraManager;
 import edu.sfsu.cs.orange.ocr.camera.ShutterButton;
 import edu.sfsu.cs.orange.ocr.language.LanguageCodeHelper;
-import edu.sfsu.cs.orange.ocr.language.TranslateAsyncTask;
 
 /**
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
@@ -271,7 +275,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         translationView = (TextView) findViewById(R.id.translation_text_view);
         registerForContextMenu(translationView);
 
-        progressView = (View) findViewById(R.id.indeterminate_progress_indicator_view);
+        //progressView = (View) findViewById(R.id.indeterminate_progress_indicator_view);
 
         cameraManager = new CameraManager(getApplication());
         viewfinderView.setCameraManager(cameraManager);
@@ -785,36 +789,52 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         TextView sourceLanguageTextView = (TextView) findViewById(R.id.source_language_text_view);
         sourceLanguageTextView.setText(sourceLanguageReadable);
         TextView ocrResultTextView = (TextView) findViewById(R.id.ocr_result_text_view);
-        ocrResultTextView.setText(ocrResult.getText());
+        // Clickable Span
+        String ocrResultText = ocrResult.getText();
+        ocrResultTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        ocrResultTextView.setText(ocrResultText, TextView.BufferType.SPANNABLE);
+        Spannable spans = (Spannable) ocrResultTextView.getText();
+        BreakIterator iterator = BreakIterator.getWordInstance(Locale.US);
+        iterator.setText(ocrResultText);
+        int start = iterator.first();
+        for (int end = iterator.next(); end != BreakIterator.DONE; start = end, end = iterator
+                .next()) {
+            String possibleWord = ocrResultText.substring(start, end);
+            if (Character.isLetterOrDigit(possibleWord.charAt(0))) {
+                ClickableSpan clickSpan = getClickableSpan(possibleWord);
+                spans.setSpan(clickSpan, start, end,
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+        }
+
         // Crudely scale betweeen 22 and 32 -- bigger font for shorter text
         int scaledSize = Math.max(22, 32 - ocrResult.getText().length() / 4);
         ocrResultTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, scaledSize);
 
-        TextView translationLanguageLabelTextView = (TextView) findViewById(R.id.translation_language_label_text_view);
-        TextView translationLanguageTextView = (TextView) findViewById(R.id.translation_language_text_view);
-        TextView translationTextView = (TextView) findViewById(R.id.translation_text_view);
-        if (isTranslationActive) {
-            // Handle translation text fields
-            translationLanguageLabelTextView.setVisibility(View.VISIBLE);
-            translationLanguageTextView.setText(targetLanguageReadable);
-            translationLanguageTextView.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL), Typeface.NORMAL);
-            translationLanguageTextView.setVisibility(View.VISIBLE);
-
-            // Activate/re-activate the indeterminate progress indicator
-            translationTextView.setVisibility(View.GONE);
-            progressView.setVisibility(View.VISIBLE);
-            setProgressBarVisibility(true);
-
-            // Get the translation asynchronously
-            new TranslateAsyncTask(this, sourceLanguageCodeTranslation, targetLanguageCodeTranslation,
-                    ocrResult.getText()).execute();
-        } else {
-            translationLanguageLabelTextView.setVisibility(View.GONE);
-            translationLanguageTextView.setVisibility(View.GONE);
-            translationTextView.setVisibility(View.GONE);
-            progressView.setVisibility(View.GONE);
-            setProgressBarVisibility(false);
-        }
+        // TextView translationLanguageLabelTextView = (TextView) findViewById(R.id.translation_language_label_text_view);
+        // TextView translationLanguageTextView = (TextView) findViewById(R.id.translation_language_text_view);
+        // TextView translationTextView = (TextView) findViewById(R.id.translation_text_view);
+//        if (isTranslationActive) {
+//            // Handle translation text fields
+//            // translationLanguageLabelTextView.setVisibility(View.VISIBLE);
+//            // translationLanguageTextView.setText(targetLanguageReadable);
+//            // translationLanguageTextView.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL), Typeface.NORMAL);
+//            // translationLanguageTextView.setVisibility(View.VISIBLE);
+//
+//            // Activate/re-activate the indeterminate progress indicator
+//            // translationTextView.setVisibility(View.GONE);
+//            progressView.setVisibility(View.VISIBLE);
+//            setProgressBarVisibility(true);
+//
+//            // Get the translation asynchronously
+//            // new TranslateAsyncTask(this, sourceLanguageCodeTranslation, targetLanguageCodeTranslation, ocrResult.getText()).execute();
+//        } else {
+//            // translationLanguageLabelTextView.setVisibility(View.GONE);
+//            // translationLanguageTextView.setVisibility(View.GONE);
+//            // translationTextView.setVisibility(View.GONE);
+//            // progressView.setVisibility(View.GONE);
+//            setProgressBarVisibility(false);
+//        }
         return true;
     }
 
@@ -1255,5 +1275,26 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 .setOnCancelListener(new FinishListener(this))
                 .setPositiveButton("Done", new FinishListener(this))
                 .show();
+    }
+
+    private ClickableSpan getClickableSpan(final String word) {
+        return new ClickableSpan() {
+            final String mWord;
+
+            {
+                mWord = word;
+            }
+
+            @Override
+            public void onClick(View view) {
+                translationView.setText(word);
+                Toast.makeText(view.getContext(), mWord, Toast.LENGTH_SHORT)
+                        .show();
+            }
+
+            public void updateDrawState(TextPaint ds) {
+                super.updateDrawState(ds);
+            }
+        };
     }
 }
