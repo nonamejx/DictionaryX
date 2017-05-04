@@ -28,4 +28,17 @@ public class DatabaseHelper extends SQLiteAssetHelper {
         }
         return word;
     }
+
+    public boolean isMisspelled(String key) {
+        if (key.trim().length() == 0) return false;
+        SQLiteDatabase db = getReadableDatabase();
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        String[] sqlSelect = {"dict_id", "new_word", "mean"};
+        String sqlTables = "dict_tbl";
+        qb.setTables(sqlTables);
+        Cursor c = qb.query(db, sqlSelect, sqlSelect[1] + "=?", new String[] {key.trim().toLowerCase()}, null, null, null);
+        if (c != null && c.moveToFirst()) {
+            return false;
+        } return true;
+    }
 }

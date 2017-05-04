@@ -29,6 +29,8 @@ import com.googlecode.tesseract.android.TessBaseAPI.PageIteratorLevel;
 
 import java.util.ArrayList;
 
+import edu.sfsu.cs.orange.ocr.database.DatabaseHelper;
+
 /**
  * Class to send OCR requests to the OCR engine in a separate thread, send a success/failure message,
  * and dismiss the indeterminate progress dialog box. Used for non-continuous mode OCR only.
@@ -46,6 +48,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<Void, Void, Boolean> {
     private int height;
     private OcrResult ocrResult;
     private long timeRequired;
+    private DatabaseHelper databaseHelper;
 
     OcrRecognizeAsyncTask(CaptureActivity activity, TessBaseAPI baseApi, byte[] data, int width, int height) {
         this.activity = activity;
@@ -53,6 +56,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<Void, Void, Boolean> {
         this.data = data;
         this.width = width;
         this.height = height;
+        this.databaseHelper = new DatabaseHelper(activity);
     }
 
     @Override
@@ -120,6 +124,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<Void, Void, Boolean> {
             return false;
         }
         timeRequired = System.currentTimeMillis() - start;
+        textResult = removeMisspelledWords(textResult);
         ocrResult.setBitmap(bitmap);
         ocrResult.setText(textResult);
         ocrResult.setRecognitionTimeRequired(timeRequired);
@@ -145,5 +150,16 @@ final class OcrRecognizeAsyncTask extends AsyncTask<Void, Void, Boolean> {
         if (baseApi != null) {
             baseApi.clear();
         }
+    }
+
+    private String removeMisspelledWords(String text) {
+        text = text.replace("\n", " ").replace("\r", " ");
+        String[] tokens = text.split(" ");
+        for (String s : tokens) {
+            if (databaseHelper.isMisspelled(s)) {
+                text = text.replace(s, "...");
+            }
+        }
+        return text;
     }
 }
