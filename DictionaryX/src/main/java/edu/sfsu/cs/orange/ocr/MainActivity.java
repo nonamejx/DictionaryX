@@ -1,5 +1,6 @@
 package edu.sfsu.cs.orange.ocr;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,7 +12,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import edu.sfsu.cs.orange.ocr.fragment.HistoryFragment;
 import edu.sfsu.cs.orange.ocr.fragment.SearchFragment;
@@ -27,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // insert SearchFragment
+        insertFragment(SearchFragment.class);
 
         // Set a Toolbar to replace the ActionBar.
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -66,30 +69,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void selectDrawerItem(MenuItem menuItem) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
-        Fragment fragment = null;
         Class fragmentClass;
         switch (menuItem.getItemId()) {
-            case R.id.nav_first_fragment:
-                Toast.makeText(this, "Search", Toast.LENGTH_SHORT).show();
+            case R.id.nav_search_fragment:
                 fragmentClass = SearchFragment.class;
                 break;
-            case R.id.nav_second_fragment:
-                Toast.makeText(this, "History", Toast.LENGTH_SHORT).show();
+            case R.id.nav_history_fragment:
                 fragmentClass = HistoryFragment.class;
                 break;
+            case R.id.nav_scan_fragment:
+                // Send a new intent
+                Intent i = new Intent(this, CaptureActivity.class);
+                startActivity(i);
             default:
                 fragmentClass = SearchFragment.class;
         }
 
-        try {
-            fragment = (Fragment) fragmentClass.newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
+        insertFragment(fragmentClass);
 
         // Highlight the selected item has been done by NavigationView
         menuItem.setChecked(true);
@@ -97,6 +94,18 @@ public class MainActivity extends AppCompatActivity {
         setTitle(menuItem.getTitle());
         // Close the navigation drawer
         mDrawer.closeDrawers();
+    }
+
+    private void insertFragment(Class fragmentClass) {
+        Fragment fragment = null;
+        try {
+            fragment = (Fragment) fragmentClass.newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // Insert the fragment by replacing any existing fragment
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
     }
 
     private ActionBarDrawerToggle setupDrawerToggle() {

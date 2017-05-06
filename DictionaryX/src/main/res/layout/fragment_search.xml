@@ -16,7 +16,7 @@
             android:imeOptions="actionSearch"
             android:inputType="text"
             android:maxLines="1"
-            android:textSize="20sp" />
+            android:textSize="@dimen/edt.search.textSize" />
     </LinearLayout>
 
     <ScrollView
@@ -29,7 +29,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:text="definition"
-            android:textAppearance="@android:style/TextAppearance.Small" />
+            android:textAppearance="@android:style/TextAppearance.Small"
+            android:textSize="@dimen/textView.definition.textSize" />
     </ScrollView>
 
 </LinearLayout>
