@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
+    compileSdkVersion 25
     buildToolsVersion "24.0.2"
 
     defaultConfig {
@@ -19,6 +19,11 @@ android {
 }
 
 dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'com.rmtheis:tess-two:6.0.4'
     compile files('libs/google-api-translate-java-0.98-mod2.jar')
     compile files('libs/json_simple-1.1.jar')
@@ -28,4 +33,5 @@ dependencies {
     compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:+'
     compile 'org.sufficientlysecure:html-textview:3.3'
     compile 'org.jsoup:jsoup:1.10.2'
+    compile 'com.android.support:design:25.2.0'
 }

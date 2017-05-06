@@ -17,4 +17,8 @@
  -->
 <resources>
     <string name="app_name">OCR Test</string>
+    <string name="drawer_open">Drawer Open</string>
+    <string name="drawer_close">Drawer Close</string>
+    <string name="menu_item_search">Search</string>
+    <string name="menu_item_scan">Scan</string>
 </resources>
