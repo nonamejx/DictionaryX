@@ -19,7 +19,7 @@ import android.view.inputmethod.InputMethodManager;
 import edu.sfsu.cs.orange.ocr.fragment.HistoryFragment;
 import edu.sfsu.cs.orange.ocr.fragment.SearchFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SearchFragment.OnSearchListener {
     private DrawerLayout mDrawer;
     private Toolbar toolbar;
     private NavigationView nvDrawer;
@@ -152,5 +152,20 @@ public class MainActivity extends AppCompatActivity {
     private void closeKeyboard() {
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+    }
+
+    private void showKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+    }
+
+    @Override
+    public void onSearchCompleted() {
+        closeKeyboard();
+    }
+
+    @Override
+    public void onClearKeyword() {
+
     }
 }

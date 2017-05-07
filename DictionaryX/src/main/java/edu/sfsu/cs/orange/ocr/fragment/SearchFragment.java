@@ -1,14 +1,19 @@
 package edu.sfsu.cs.orange.ocr.fragment;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -22,10 +27,12 @@ public class SearchFragment extends Fragment {
     private DatabaseHelper databaseHelper;
     private HtmlTextView htmlTVDefinition;
     private EditText edtSearch;
+    private OnSearchListener searchListener;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        searchListener = (OnSearchListener) getActivity();
     }
 
     @Nullable
@@ -52,6 +59,50 @@ public class SearchFragment extends Fragment {
                 return false;
             }
         });
+
+        edtSearch.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                final int DRAWABLE_LEFT = 0;
+                final int DRAWABLE_TOP = 1;
+                final int DRAWABLE_RIGHT = 2;
+                final int DRAWABLE_BOTTOM = 3;
+
+                if(event.getAction() == MotionEvent.ACTION_UP) {
+                    if(edtSearch.getCompoundDrawables()[DRAWABLE_RIGHT] != null && event.getRawX() >= (edtSearch.getRight() - edtSearch.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
+                        // clear text
+                        edtSearch.setText("");
+                        // invisible cross button
+                        edtSearch.setCompoundDrawablesWithIntrinsicBounds(0 , 0, 0, 0);
+                        // set focus and show keyboard
+                        edtSearch.requestFocus();
+                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.showSoftInput(edtSearch, InputMethodManager.SHOW_IMPLICIT);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+
+        edtSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.length() > 0) {
+                    edtSearch.setCompoundDrawablesWithIntrinsicBounds(0 , 0, R.drawable.ic_clear_black, 0);
+                } else {
+                    edtSearch.setCompoundDrawablesWithIntrinsicBounds(0 , 0, 0, 0);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
     }
 
     private class SearchAsyncTask extends AsyncTask<String, Word, Word> {
@@ -64,11 +115,19 @@ public class SearchFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Word word) {
+            // Search Completed
+            searchListener.onSearchCompleted();
+
             if (word == null) {
                 htmlTVDefinition.setHtml("No words found !");
             } else {
                 htmlTVDefinition.setHtml(word.getMean());
             }
         }
+    }
+
+    public interface OnSearchListener {
+        void onSearchCompleted();
+        void onClearKeyword();
     }
 }

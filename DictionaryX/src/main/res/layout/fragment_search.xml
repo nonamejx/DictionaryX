@@ -13,6 +13,7 @@
             android:id="@+id/edtSearch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:imeOptions="actionSearch"
             android:inputType="text"
             android:maxLines="1"
@@ -28,7 +29,7 @@
             android:id="@+id/htmlTVDefinition"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="definition"
+            android:hint="@string/hint_edtSearch"
             android:textAppearance="@android:style/TextAppearance.Small"
             android:textSize="@dimen/textView.definition.textSize" />
     </ScrollView>
