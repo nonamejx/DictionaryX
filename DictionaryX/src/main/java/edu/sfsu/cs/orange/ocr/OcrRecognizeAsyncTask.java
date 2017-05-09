@@ -29,7 +29,7 @@ import com.googlecode.tesseract.android.TessBaseAPI.PageIteratorLevel;
 
 import java.util.ArrayList;
 
-import edu.sfsu.cs.orange.ocr.database.DatabaseHelper;
+import edu.sfsu.cs.orange.ocr.database.RealmHelper;
 
 /**
  * Class to send OCR requests to the OCR engine in a separate thread, send a success/failure message,
@@ -48,7 +48,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<Void, Void, Boolean> {
     private int height;
     private OcrResult ocrResult;
     private long timeRequired;
-    private DatabaseHelper databaseHelper;
+    private RealmHelper realmHelper;
 
     OcrRecognizeAsyncTask(CaptureActivity activity, TessBaseAPI baseApi, byte[] data, int width, int height) {
         this.activity = activity;
@@ -56,7 +56,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<Void, Void, Boolean> {
         this.data = data;
         this.width = width;
         this.height = height;
-        this.databaseHelper = new DatabaseHelper(activity);
+        this.realmHelper = new RealmHelper(activity);
     }
 
     @Override
@@ -153,11 +153,16 @@ final class OcrRecognizeAsyncTask extends AsyncTask<Void, Void, Boolean> {
     }
 
     private String removeMisspelledWords(String text) {
+        Log.d("OcrRecognizeAsyncTask", "removeMisspelledWords: " + text);
         text = text.replace("\n", " ").replace("\r", " ");
+        text = text.replaceAll("[^A-Za-z0-9]", " ");
         String[] tokens = text.split(" ");
+        RealmHelper realmHelper = new RealmHelper(activity);
         for (String s : tokens) {
-            if (databaseHelper.isMisspelled(s)) {
-                text = text.replace(s, "...");
+            Log.d("OcrRecognizeAsyncTask", "token [" + s + "]");
+            if (realmHelper.isMisspelled(s)) {
+                Log.d("OcrRecognizeAsyncTask", "token [" + s + "] misspelled");
+                text = text.replaceFirst(s, "...");
             }
         }
         return text;

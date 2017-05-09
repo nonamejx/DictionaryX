@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2008 ZXing authors
- * Copyright 2011 Robert Theis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package edu.sfsu.cs.orange.ocr;
 
 import android.app.Activity;
@@ -60,21 +43,17 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.googlecode.tesseract.android.TessBaseAPI;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.BreakIterator;
 import java.util.Locale;
-
 import edu.sfsu.cs.orange.ocr.camera.CameraManager;
 import edu.sfsu.cs.orange.ocr.camera.ShutterButton;
-import edu.sfsu.cs.orange.ocr.database.DatabaseHelper;
+import edu.sfsu.cs.orange.ocr.database.RealmHelper;
 import edu.sfsu.cs.orange.ocr.entity.Word;
 import edu.sfsu.cs.orange.ocr.language.LanguageCodeHelper;
 
@@ -244,7 +223,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         return cameraManager;
     }
 
-    DatabaseHelper databaseHelper;
+    RealmHelper realmHelper;
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -374,7 +353,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
         isEngineReady = false;
 
-        databaseHelper = new DatabaseHelper(this);
+        realmHelper = new RealmHelper(this);
     }
 
     @Override
@@ -1108,7 +1087,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
                 isFirstLaunch = false;
             }
             if (currentVersion > lastVersion) {
-
                 // Record the last version for which we last displayed the What's New (Help) page
                 prefs.edit().putInt(PreferencesActivity.KEY_HELP_VERSION_SHOWN, currentVersion).commit();
                 Intent intent = new Intent(this, HelpActivity.class);
@@ -1314,7 +1292,9 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
         @Override
         protected Word doInBackground(String... strings) {
-            return databaseHelper.search(strings[0]);
+            Word word = new RealmHelper(getApplicationContext()).getWord(strings[0]);
+            if (word == null) return null;
+            return word.clone();
         }
 
         @Override

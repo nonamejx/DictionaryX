@@ -3,6 +3,7 @@ package edu.sfsu.cs.orange.ocr;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -15,14 +16,26 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ProgressBar;
 
+import java.util.List;
+
+import edu.sfsu.cs.orange.ocr.database.RealmHelper;
+import edu.sfsu.cs.orange.ocr.entity.Dictionary;
+import edu.sfsu.cs.orange.ocr.entity.Word;
 import edu.sfsu.cs.orange.ocr.fragment.HistoryFragment;
 import edu.sfsu.cs.orange.ocr.fragment.SearchFragment;
+import edu.sfsu.cs.orange.ocr.util.JSONUtils;
+import io.realm.Realm;
+import io.realm.RealmList;
 
 public class MainActivity extends AppCompatActivity implements SearchFragment.OnSearchListener {
     private DrawerLayout mDrawer;
     private Toolbar toolbar;
     private NavigationView nvDrawer;
+    private ProgressBar pbLoadingData;
+
+    private RealmHelper realmHelper;
 
     private ActionBarDrawerToggle drawerToggle;
 
@@ -30,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        realmHelper = new RealmHelper(this);
 
         // insert SearchFragment
         insertFragment(SearchFragment.class);
@@ -49,6 +64,13 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
 
         // Tie DrawerLayout events to the ActionBarToggle
         mDrawer.addDrawerListener(drawerToggle);
+
+        pbLoadingData = (ProgressBar) findViewById(R.id.pbLoadingData);
+        if (realmHelper.getWords().size() == 0) {
+            pbLoadingData.setVisibility(View.VISIBLE);
+            new LoadDataAtFirstAsync().execute();
+        }
+
     }
 
     @Override
@@ -156,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
 
     private void showKeyboard() {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,0);
+        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
     }
 
     @Override
@@ -166,6 +188,35 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.On
 
     @Override
     public void onClearKeyword() {
+    }
 
+    private void initDataAtFirstRun(Realm realm) {
+        List<Word> words;
+        String fileName = getResources().getString(R.string.data_fileName);
+        words = JSONUtils.getInstance(this).parseWords(fileName);
+        Dictionary d = new Dictionary();
+        RealmList<Word> dictData = new RealmList<>();
+        dictData.addAll(words.subList(0, words.size()));
+        d.setDictData(dictData);
+
+        if (dictData.size() > 0) {
+            realm.beginTransaction();
+            realm.copyToRealmOrUpdate(d);
+            realm.commitTransaction();
+        }
+    }
+
+    class LoadDataAtFirstAsync extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            initDataAtFirstRun(new RealmHelper(getApplicationContext()).getRealm());
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            pbLoadingData.setVisibility(View.GONE);
+        }
     }
 }

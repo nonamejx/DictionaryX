@@ -1,8 +1,16 @@
 package edu.sfsu.cs.orange.ocr.entity;
 
-public class Word {
+import com.google.gson.annotations.SerializedName;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
+public class Word extends RealmObject {
+    @PrimaryKey
+    @SerializedName("dict_id")
     private int dict_id;
+    @SerializedName("new_word")
     private String new_word;
+    @SerializedName("mean")
     private String mean;
 
     public Word() {
@@ -36,5 +44,13 @@ public class Word {
 
     public void setMean(String mean) {
         this.mean = mean;
+    }
+
+    public Word clone() {
+        Word word = new Word();
+        word.setDict_id(this.dict_id);
+        word.setNew_word(new String(this.getNew_word()));
+        word.setMean(new String(this.getMean()));
+        return word;
     }
 }

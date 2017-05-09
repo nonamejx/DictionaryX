@@ -20,11 +20,10 @@ import android.widget.TextView;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import edu.sfsu.cs.orange.ocr.R;
-import edu.sfsu.cs.orange.ocr.database.DatabaseHelper;
+import edu.sfsu.cs.orange.ocr.database.RealmHelper;
 import edu.sfsu.cs.orange.ocr.entity.Word;
 
 public class SearchFragment extends Fragment {
-    private DatabaseHelper databaseHelper;
     private HtmlTextView htmlTVDefinition;
     private EditText edtSearch;
     private OnSearchListener searchListener;
@@ -44,11 +43,10 @@ public class SearchFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        databaseHelper = new DatabaseHelper(getContext());
         edtSearch = (EditText) view.findViewById(R.id.edtSearch);
         htmlTVDefinition = (HtmlTextView) view.findViewById(R.id.htmlTVDefinition);
 
-        edtSearch.setOnEditorActionListener(new TextView.OnEditorActionListener(){
+        edtSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -68,12 +66,12 @@ public class SearchFragment extends Fragment {
                 final int DRAWABLE_RIGHT = 2;
                 final int DRAWABLE_BOTTOM = 3;
 
-                if(event.getAction() == MotionEvent.ACTION_UP) {
-                    if(edtSearch.getCompoundDrawables()[DRAWABLE_RIGHT] != null && event.getRawX() >= (edtSearch.getRight() - edtSearch.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (edtSearch.getCompoundDrawables()[DRAWABLE_RIGHT] != null && event.getRawX() >= (edtSearch.getRight() - edtSearch.getCompoundDrawables()[DRAWABLE_RIGHT].getBounds().width())) {
                         // clear text
                         edtSearch.setText("");
                         // invisible cross button
-                        edtSearch.setCompoundDrawablesWithIntrinsicBounds(0 , 0, 0, 0);
+                        edtSearch.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                         // set focus and show keyboard
                         edtSearch.requestFocus();
                         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -93,9 +91,9 @@ public class SearchFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 0) {
-                    edtSearch.setCompoundDrawablesWithIntrinsicBounds(0 , 0, R.drawable.ic_clear_black, 0);
+                    edtSearch.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_clear_black, 0);
                 } else {
-                    edtSearch.setCompoundDrawablesWithIntrinsicBounds(0 , 0, 0, 0);
+                    edtSearch.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
                 }
             }
 
@@ -105,12 +103,19 @@ public class SearchFragment extends Fragment {
         });
     }
 
+    public interface OnSearchListener {
+        void onSearchCompleted();
+
+        void onClearKeyword();
+    }
+
     private class SearchAsyncTask extends AsyncTask<String, Word, Word> {
 
         @Override
         protected Word doInBackground(String... params) {
-            Word word = databaseHelper.search(params[0]);
-            return word;
+            Word word = new RealmHelper(getActivity()).getWord(params[0]);
+            if (word == null) return null;
+            return word.clone();
         }
 
         @Override
@@ -124,10 +129,5 @@ public class SearchFragment extends Fragment {
                 htmlTVDefinition.setHtml(word.getMean());
             }
         }
-    }
-
-    public interface OnSearchListener {
-        void onSearchCompleted();
-        void onClearKeyword();
     }
 }
