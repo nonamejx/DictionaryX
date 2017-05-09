@@ -2,4 +2,5 @@
 <resources>
     <dimen name="edt.search.textSize">20sp</dimen>
     <dimen name="textView.definition.textSize">16sp</dimen>
+    <dimen name="normal_padding">8dp</dimen>
 </resources>

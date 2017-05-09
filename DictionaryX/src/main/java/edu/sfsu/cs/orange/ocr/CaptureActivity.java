@@ -43,14 +43,18 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.googlecode.tesseract.android.TessBaseAPI;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.BreakIterator;
 import java.util.Locale;
+
 import edu.sfsu.cs.orange.ocr.camera.CameraManager;
 import edu.sfsu.cs.orange.ocr.camera.ShutterButton;
 import edu.sfsu.cs.orange.ocr.database.RealmHelper;
@@ -170,6 +174,7 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     private static final int OPTIONS_SHARE_RECOGNIZED_TEXT_ID = Menu.FIRST + 2;
     private static final int OPTIONS_SHARE_TRANSLATED_TEXT_ID = Menu.FIRST + 3;
     private static boolean isFirstLaunch; // True if this is the first time the app is being run
+    RealmHelper realmHelper;
     private CameraManager cameraManager;
     private CaptureActivityHandler handler;
     private ViewfinderView viewfinderView;
@@ -222,8 +227,6 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
     CameraManager getCameraManager() {
         return cameraManager;
     }
-
-    RealmHelper realmHelper;
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -1288,6 +1291,15 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
         };
     }
 
+    private String getMeaning(String text) {
+        Document doc = Jsoup.parse(text);
+        Elements fonts = doc.getElementsByTag("font");
+        if (fonts != null && fonts.size() > 0) {
+            return fonts.get(0).text();
+        }
+        return null;
+    }
+
     private class SearchAsyncTask extends AsyncTask<String, Word, Word> {
 
         @Override
@@ -1302,16 +1314,10 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
             if (word == null) {
             } else {
                 tvMeaning.setText(getMeaning(word.getMean()));
+                // save to history
+                RealmHelper realmHelper = new RealmHelper(getApplicationContext());
+                realmHelper.addWordToHistory(word);
             }
         }
-    }
-
-    private String getMeaning(String text) {
-        Document doc = Jsoup.parse(text);
-        Elements fonts = doc.getElementsByTag("font");
-        if (fonts != null && fonts.size() > 0) {
-            return fonts.get(0).text();
-        }
-        return null;
     }
 }

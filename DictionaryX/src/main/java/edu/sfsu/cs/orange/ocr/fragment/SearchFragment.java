@@ -127,6 +127,9 @@ public class SearchFragment extends Fragment {
                 htmlTVDefinition.setHtml("No words found !");
             } else {
                 htmlTVDefinition.setHtml(word.getMean());
+                // save to history
+                RealmHelper realmHelper = new RealmHelper(getContext());
+                realmHelper.addWordToHistory(word);
             }
         }
     }

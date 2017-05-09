@@ -2,6 +2,7 @@ package edu.sfsu.cs.orange.ocr.database;
 
 import android.content.Context;
 import java.util.List;
+import edu.sfsu.cs.orange.ocr.entity.Dictionary;
 import edu.sfsu.cs.orange.ocr.entity.Word;
 import io.realm.Realm;
 
@@ -33,5 +34,24 @@ public class RealmHelper {
         else {
             return mRealm.where(Word.class).equalTo("new_word", keyword.trim().toLowerCase()).findFirst() == null ? true : false;
         }
+    }
+
+    public List<Word> getRecentWords() {
+        Dictionary d = mRealm.where(Dictionary.class).findFirst();
+        return d.getRecentWords();
+    }
+
+    public void addWordToHistory(Word word) {
+        Dictionary d = mRealm.where(Dictionary.class).findFirst();
+        mRealm.beginTransaction();
+        d.getRecentWords().add(word);
+        mRealm.commitTransaction();
+    }
+
+    public void removeWordFromHistory(Word word) {
+        Dictionary d = mRealm.where(Dictionary.class).findFirst();
+        mRealm.beginTransaction();
+        d.getRecentWords().remove(word);
+        mRealm.commitTransaction();
     }
 }
