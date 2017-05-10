@@ -4,26 +4,22 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
+    <EditText
+        android:id="@+id/edtSearch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/edtSearch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:maxLines="1"
-            android:textSize="@dimen/edt.search.textSize" />
-    </LinearLayout>
+        android:gravity="center_vertical"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:maxLines="1"
+        android:textSize="@dimen/edt.search.textSize" />
 
     <ScrollView
+        android:id="@+id/definitionView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:visibility="gone">
 
         <org.sufficientlysecure.htmltextview.HtmlTextView
             android:id="@+id/htmlTVDefinition"
@@ -33,5 +29,12 @@
             android:textAppearance="@android:style/TextAppearance.Small"
             android:textSize="@dimen/textView.definition.textSize" />
     </ScrollView>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvSuggestedWords"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="visible" />
 
 </LinearLayout>

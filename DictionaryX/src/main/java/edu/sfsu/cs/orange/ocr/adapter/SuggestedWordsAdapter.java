@@ -16,27 +16,35 @@ import java.util.List;
 import edu.sfsu.cs.orange.ocr.R;
 import edu.sfsu.cs.orange.ocr.entity.Word;
 
-public class RecentWordAdapter extends RecyclerView.Adapter<RecentWordAdapter.ViewHolder> {
-
-    private List<Word> mRecentWords;
+public class SuggestedWordsAdapter extends RecyclerView.Adapter<SuggestedWordsAdapter.ViewHolder> {
+    private List<Word> mSuggestedWords;
     private Context mContext;
 
-    public RecentWordAdapter(Context context, List<Word> words) {
+    public SuggestedWordsAdapter(Context context, List<Word> words) {
         this.mContext = context;
-        this.mRecentWords = words;
+        this.mSuggestedWords = words;
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(mContext).inflate(R.layout.item_recent_word, parent, false);
+    public SuggestedWordsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(mContext).inflate(R.layout.item_suggested_word, parent, false);
         return new ViewHolder(v);
     }
 
+    public Word getItem(int position) {
+        return mSuggestedWords.get(position);
+    }
+
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        Word word = mRecentWords.get(mRecentWords.size() - 1 - position);
+    public void onBindViewHolder(SuggestedWordsAdapter.ViewHolder holder, int position) {
+        Word word = mSuggestedWords.get(position);
         holder.tvNewWord.setText(word.getNew_word());
         holder.tvMeaning.setText(getMeaning(word.getMean()));
+    }
+
+    @Override
+    public int getItemCount() {
+        return mSuggestedWords.size();
     }
 
     private String getMeaning(String text) {
@@ -46,15 +54,6 @@ public class RecentWordAdapter extends RecyclerView.Adapter<RecentWordAdapter.Vi
             return fonts.get(0).text();
         }
         return null;
-    }
-
-    public Word getItem(int position) {
-        return mRecentWords.get(mRecentWords.size() - 1 - position);
-    }
-
-    @Override
-    public int getItemCount() {
-        return mRecentWords.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

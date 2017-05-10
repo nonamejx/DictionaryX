@@ -1,9 +1,13 @@
 package edu.sfsu.cs.orange.ocr.database;
 
 import android.content.Context;
+
+import java.util.ArrayList;
 import java.util.List;
+
 import edu.sfsu.cs.orange.ocr.entity.Dictionary;
 import edu.sfsu.cs.orange.ocr.entity.Word;
+import io.realm.Case;
 import io.realm.Realm;
 
 public class RealmHelper {
@@ -53,5 +57,10 @@ public class RealmHelper {
         mRealm.beginTransaction();
         d.getRecentWords().remove(word);
         mRealm.commitTransaction();
+    }
+
+    public List<Word> getSuggestedWords(String keyword) {
+        if (keyword == null || keyword.length() == 0) return new ArrayList<>();
+        return mRealm.where(Word.class).beginsWith("new_word", keyword, Case.INSENSITIVE).findAll();
     }
 }
