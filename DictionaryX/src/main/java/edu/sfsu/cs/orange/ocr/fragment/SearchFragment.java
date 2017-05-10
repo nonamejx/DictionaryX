@@ -74,6 +74,10 @@ public class SearchFragment extends Fragment {
                 rvSuggestedWords.setVisibility(View.GONE);
 
                 closeKeyboard();
+
+                // save to history
+                RealmHelper realmHelper = new RealmHelper(getContext());
+                realmHelper.addWordToHistory(word);
             }
 
             @Override
