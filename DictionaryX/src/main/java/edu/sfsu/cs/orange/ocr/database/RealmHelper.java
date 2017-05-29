@@ -42,6 +42,7 @@ public class RealmHelper {
 
     public List<Word> getRecentWords() {
         Dictionary d = mRealm.where(Dictionary.class).findFirst();
+        if (d == null) return new ArrayList<Word>();
         return d.getRecentWords();
     }
 
